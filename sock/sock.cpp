@@ -31,15 +31,6 @@ BOOL CsockApp::InitInstance()
 {
 	CWinApp::InitInstance();
 
-	WORD wVersionRequested;
-	WSADATA wsaData;
-	int err;
-
-	/* Use the MAKEWORD(lowbyte, highbyte) macro declared in Windef.h */
-	wVersionRequested = MAKEWORD(2, 2);
-
-	err = WSAStartup(wVersionRequested, &wsaData);
-
 	if (!AfxSocketInit())
 	{
 		AfxMessageBox(IDP_SOCKETS_INIT_FAILED);
@@ -51,7 +42,8 @@ BOOL CsockApp::InitInstance()
 
 
 using namespace std;
-CSocket* client;
+CSocket client;
+SOCKET clientSockHandle;
 
 inline string ReceiveString(CSocket& s)
 {
@@ -91,8 +83,8 @@ BSTR ConvertStringToBStr(char* str)
 /// -222: Не удается подключиться к NamePipe'у
 string SendMessageToServer(string message)
 {
-	SendString(*client, message);
-	return ReceiveString(*client);
+	SendString(client, message);
+	return ReceiveString(client);
 }
 
 // Наш пайп, инициализируется при успешном подключении в методе ConnectToNamedPipe
@@ -101,12 +93,16 @@ extern "C"
 {
 	_declspec(dllexport) int _stdcall ConnectToServerViaWSockets()
 	{
-		client = new CSocket;
-		SOCKET socketHandle = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		AfxWinInit(::GetModuleHandle(NULL), NULL, ::GetCommandLine(), 0);
+		AfxSocketInit();
 
-		client->m_hSocket = socketHandle;
+		client.Create();
+		clientSockHandle = client.m_hSocket;
+	/*	SOCKET socketHandle = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-		if (!client->Connect("127.0.0.1", 12345))
+		client->m_hSocket = socketHandle;*/
+
+		if (!client.Connect("127.0.0.1", 12345))
 			return -222;
 
 		return atoi(SendMessageToServer("get_active_threads_count").c_str());
@@ -114,9 +110,9 @@ extern "C"
 
 	_declspec(dllexport) void _stdcall ClientDisconnect()
 	{
-		SendString(*client, "quit");
-		client->Close();
-		delete client;
+		SendString(client, "quit");
+		client.Close();
+		closesocket(clientSockHandle);
 	}
 	/*В качестве возвращаемого значения необходим BStr,
 	для этого используем самописный метод конвертации из char* в bstr
