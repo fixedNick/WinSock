@@ -196,6 +196,7 @@ void ProcessClient(SOCKET hSock)
 		cout << "client request is: " << request << endl;
 		if (request == "quit")
 		{
+			closesocket(sockClient.Detach());
 			cout << "client disconnected!\n"; 
 			break;
 		}
