@@ -2,7 +2,6 @@
 #include "framework.h"
 #include "Efimenko_lab1_Sem6.h"
 #include "Efimenko_Thread_Struct.h"
-#include "Sockets.h"
 #include "counter.h"
 #include <thread>
 #include <vector>
@@ -15,6 +14,9 @@
 #endif
 
 using namespace std;
+
+extern "C" _declspec(dllimport) void __cdecl SendStringToSocket(CSocket & s, const string & str);
+extern "C" _declspec(dllimport) string __cdecl ReceiveStringFromSocket(CSocket& s);
 
 // Метод для вывода на консоль, но использующий lock_guard(распространяется на промежуток от '{' и до '}'
 // Чтобы серверная консолька красиво выводила текст
@@ -192,39 +194,29 @@ void ProcessClient(SOCKET hSock)
 
 	while (true)
 	{
-		string request = ReceiveString(sockClient);
+		string request = ReceiveStringFromSocket(sockClient);
 		cout << "client request is: " << request << endl;
 		if (request == "quit")
 		{
-			closesocket(sockClient.Detach());
 			cout << "client disconnected!\n"; 
 			break;
 		}
 		else if (request == "get_active_threads_count")
 		{
-			SendString(sockClient, to_string(Efimenko_Thread_Struct::GetThreadsCount()));
+			SendStringToSocket(sockClient, to_string(Efimenko_Thread_Struct::GetThreadsCount()));
 			continue;
 		}
 
 		Command cmd = GetCommand(request);
 		string response = RunCommand(cmd);
 		
-		SendString(sockClient, response);
+		SendStringToSocket(sockClient, response);
 	}
 }
 
 
 void start()
 {
-	WORD wVersionRequested;
-	WSADATA wsaData;
-	int err;
-
-	/* Use the MAKEWORD(lowbyte, highbyte) macro declared in Windef.h */
-	wVersionRequested = MAKEWORD(2, 2);
-
-	err = WSAStartup(wVersionRequested, &wsaData);
-
 	CSocket Server;
 		
 	Server.Create(12345);

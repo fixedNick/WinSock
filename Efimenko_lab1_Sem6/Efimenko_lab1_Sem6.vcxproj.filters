@@ -39,9 +39,6 @@
     <ClInclude Include="counter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Sockets.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Efimenko_lab1_Sem6.cpp">

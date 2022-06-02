@@ -18,7 +18,7 @@ namespace Efimenko_lab1_Sem6_D
         #region Dll Methods To Make Requests And Get Answers To/From Server.
         [DllImport(@"..\..\..\..\x64\Debug\sock.dll")]
         [return: MarshalAs(UnmanagedType.BStr)]
-        public static extern string SendTextThroughNamedPipe(string fileText, [MarshalAs(UnmanagedType.I4)] int tidx);
+        public static extern string SendTextViaWSockets(string fileText, [MarshalAs(UnmanagedType.I4)] int tidx);
 
         [DllImport(@"..\..\..\..\x64\Debug\sock.dll")]
         [return: MarshalAs(UnmanagedType.I4)] // Возвращает количество запущенных потоков, если
@@ -144,7 +144,7 @@ namespace Efimenko_lab1_Sem6_D
 
             threadIdx = threadIdx == -1 ? threadIdx : threadIdx - 2;
 
-            var response = SendTextThroughNamedPipe(textBox2.Text, threadIdx);
+            var response = SendTextViaWSockets(textBox2.Text, threadIdx);
             MessageBox.Show(response, "Ответ сервера");
             if (response == textBox2.Text)
                 MessageBox.Show("Запись в файл(-ы) завершена!");

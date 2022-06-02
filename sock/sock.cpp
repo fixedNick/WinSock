@@ -91,6 +91,16 @@ string SendMessageToServer(string message)
 
 extern "C"
 {
+	_declspec(dllexport) void _stdcall SendStringToSocket(CSocket& s, const string& str)
+	{
+		SendString(s, str);
+	}
+
+	_declspec(dllexport) string _stdcall ReceiveStringFromSocket(CSocket& s)
+	{
+		return ReceiveString(s);
+	}
+
 	_declspec(dllexport) int _stdcall ConnectToServerViaWSockets()
 	{
 		AfxWinInit(::GetModuleHandle(NULL), NULL, ::GetCommandLine(), 0);
@@ -98,12 +108,12 @@ extern "C"
 
 		client.Create();
 		clientSockHandle = client.m_hSocket;
-	/*	SOCKET socketHandle = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-		client->m_hSocket = socketHandle;*/
-
-		if (!client.Connect("127.0.0.1", 12345))
+		if (!client.Connect("127.0.0.1", 12345)) {
+			client.Close();
+			closesocket(client.m_hSocket);
 			return -222;
+		}
 
 		return atoi(SendMessageToServer("get_active_threads_count").c_str());
 	}
@@ -117,7 +127,7 @@ extern "C"
 	/*В качестве возвращаемого значения необходим BStr,
 	для этого используем самописный метод конвертации из char* в bstr
 	метод: ConvertStringToBStr(char* str)*/
-	_declspec(dllexport) void* _stdcall SendTextThroughNamedPipe(char* fileText, int tidx)
+	_declspec(dllexport) void* _stdcall SendTextViaWSockets(char* fileText, int tidx)
 	{
 		// Формируем команду для сервера, по придуманному паттерну
 		// Общий Паттерн: <команда>:<аргумент1>:<аргументN>
