@@ -186,6 +186,7 @@ string RunCommand(Command cmd)
 
 void ProcessClient(SOCKET hSock)
 {
+	AfxSocketInit();
 	CSocket sockClient;
 	sockClient.Attach(hSock);
 
@@ -195,8 +196,7 @@ void ProcessClient(SOCKET hSock)
 		cout << "client request is: " << request << endl;
 		if (request == "quit")
 		{
-			cout << "client disconnected!\n";
-			closesocket(hSock);
+			cout << "client disconnected!\n"; 
 			break;
 		}
 		else if (request == "get_active_threads_count")
@@ -215,12 +215,18 @@ void ProcessClient(SOCKET hSock)
 
 void start()
 {
-	AfxSocketInit();
+	WORD wVersionRequested;
+	WSADATA wsaData;
+	int err;
+
+	/* Use the MAKEWORD(lowbyte, highbyte) macro declared in Windef.h */
+	wVersionRequested = MAKEWORD(2, 2);
+
+	err = WSAStartup(wVersionRequested, &wsaData);
 
 	CSocket Server;
 		
 	Server.Create(12345);
-
 	while (true)
 	{
 		if (!Server.Listen())
